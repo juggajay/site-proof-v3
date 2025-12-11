@@ -29,7 +29,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <Link
-            href="/office"
+            href="/login"
             className="hidden text-sm text-white/60 transition-colors hover:text-white sm:block"
           >
             Login
