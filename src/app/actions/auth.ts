@@ -54,7 +54,13 @@ export async function signUp(formData: FormData) {
 
   // Create organization and link user using admin client (bypasses RLS)
   if (data.user) {
-    const adminClient = createAdminClient();
+    let adminClient;
+    try {
+      adminClient = createAdminClient();
+    } catch (e) {
+      console.error("Admin client error:", e);
+      return { error: "Server configuration error. Please contact support." };
+    }
 
     // Generate slug from company name
     const slug = companyName
@@ -73,7 +79,7 @@ export async function signUp(formData: FormData) {
 
     if (orgError) {
       console.error("Failed to create organization:", orgError);
-      return { error: "Failed to create organization. Please try again." };
+      return { error: `Failed to create organization: ${orgError.message}` };
     }
 
     if (org) {
