@@ -1,3 +1,5 @@
+"use client";
+
 import { SidebarNav } from "@/components/layouts/sidebar-nav";
 import { OfficeHeader } from "@/components/layouts/office-header";
 
