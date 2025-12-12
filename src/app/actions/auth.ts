@@ -26,13 +26,35 @@ export async function signUp(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
   });
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Create a default organization for the new user
+  if (data.user) {
+    const orgName = email.split("@")[0] + "'s Organization";
+
+    const { data: org, error: orgError } = await supabase
+      .from("organizations")
+      .insert({ name: orgName })
+      .select("id")
+      .single();
+
+    if (!orgError && org) {
+      // Add user to the organization
+      await supabase
+        .from("organization_members")
+        .insert({
+          organization_id: org.id,
+          user_id: data.user.id,
+          role: "owner",
+        });
+    }
   }
 
   return { message: "Check your email to confirm your account" };
