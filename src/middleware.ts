@@ -3,6 +3,15 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
+  // Check if Supabase env vars are set
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // If env vars not set, allow request to proceed (will fail at page level with better error)
+    return NextResponse.next();
+  }
+
   // Update session first
   const response = await updateSession(request);
 
@@ -13,18 +22,14 @@ export async function middleware(request: NextRequest) {
   );
 
   if (isProtectedPath) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll() {},
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
         },
-      }
-    );
+        setAll() {},
+      },
+    });
 
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -42,18 +47,14 @@ export async function middleware(request: NextRequest) {
   );
 
   if (isAuthPath) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll() {},
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
         },
-      }
-    );
+        setAll() {},
+      },
+    });
 
     const { data: { user } } = await supabase.auth.getUser();
 
