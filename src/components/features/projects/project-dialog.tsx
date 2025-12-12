@@ -69,12 +69,19 @@ export function ProjectDialog({ project, onSuccess, trigger }: ProjectDialogProp
     try {
       if (isEditing && project) {
         await updateProject(project.id, data)
+        setOpen(false)
+        reset()
+        onSuccess?.()
       } else {
-        await createProject(data)
+        const result = await createProject(data)
+        if (result.error) {
+          setError(result.error)
+        } else {
+          setOpen(false)
+          reset()
+          onSuccess?.()
+        }
       }
-      setOpen(false)
-      reset()
-      onSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save project")
     } finally {

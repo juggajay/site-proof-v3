@@ -66,43 +66,56 @@ export async function getProject(id: string) {
 }
 
 export async function createProject(data: InsertProjectSchema) {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { error: "You must be logged in to create a project" }
+    }
 
-  // Validate input
-  const validated = insertProjectSchema.parse(data)
+    // Validate input
+    const validated = insertProjectSchema.parse(data)
 
-  // Get user's organization
-  const { data: orgId } = await supabase.rpc("get_user_organization_id")
-  if (!orgId) throw new Error("No organization found")
+    // Get user's organization
+    const { data: orgId, error: orgError } = await supabase.rpc("get_user_organization_id")
+    if (orgError) {
+      return { error: `Organization lookup failed: ${orgError.message}` }
+    }
+    if (!orgId) {
+      return { error: "No organization found. Please contact support to link your account." }
+    }
 
-  // Check for duplicate code within organization
-  const { data: existing } = await supabase
-    .from("projects")
-    .select("id")
-    .eq("organization_id", orgId)
-    .eq("code", validated.code)
-    .limit(1)
+    // Check for duplicate code within organization
+    const { data: existing } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("organization_id", orgId)
+      .eq("code", validated.code)
+      .limit(1)
 
-  if (existing && existing.length > 0) {
-    throw new Error("A project with this code already exists")
+    if (existing && existing.length > 0) {
+      return { error: "A project with this code already exists" }
+    }
+
+    const { data: project, error } = await supabase
+      .from("projects")
+      .insert({
+        ...validated,
+        organization_id: orgId,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return { error: error.message }
+    }
+
+    revalidatePath("/projects")
+    return { data: project }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Failed to create project" }
   }
-
-  const { data: project, error } = await supabase
-    .from("projects")
-    .insert({
-      ...validated,
-      organization_id: orgId,
-    })
-    .select()
-    .single()
-
-  if (error) throw error
-
-  revalidatePath("/projects")
-  return project
 }
 
 export async function updateProject(id: string, data: UpdateProjectSchema) {
