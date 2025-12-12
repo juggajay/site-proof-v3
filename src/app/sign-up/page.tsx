@@ -48,6 +48,51 @@ export default function SignUpPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Company Details */}
+          <div className="space-y-2">
+            <Label htmlFor="companyName" className="text-white/80">
+              Company Name
+            </Label>
+            <Input
+              id="companyName"
+              name="companyName"
+              type="text"
+              placeholder="ABC Construction Pty Ltd"
+              required
+              className="border-white/10 bg-white/5 text-white placeholder:text-white/40"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="abn" className="text-white/80">
+              ABN <span className="text-white/40">(optional)</span>
+            </Label>
+            <Input
+              id="abn"
+              name="abn"
+              type="text"
+              placeholder="12 345 678 901"
+              className="border-white/10 bg-white/5 text-white placeholder:text-white/40"
+            />
+          </div>
+
+          <div className="my-6 border-t border-white/10" />
+
+          {/* Account Details */}
+          <div className="space-y-2">
+            <Label htmlFor="fullName" className="text-white/80">
+              Your Name
+            </Label>
+            <Input
+              id="fullName"
+              name="fullName"
+              type="text"
+              placeholder="John Smith"
+              required
+              className="border-white/10 bg-white/5 text-white placeholder:text-white/40"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/80">
               Email
@@ -79,9 +124,7 @@ export default function SignUpPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-400">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-400">{error}</p>}
 
           <Button
             type="submit"
