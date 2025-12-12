@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -51,15 +52,17 @@ export async function signUp(formData: FormData) {
     return { error: error.message };
   }
 
-  // Create organization and link user
+  // Create organization and link user using admin client (bypasses RLS)
   if (data.user) {
+    const adminClient = createAdminClient();
+
     // Generate slug from company name
     const slug = companyName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
-    const { data: org, error: orgError } = await supabase
+    const { data: org, error: orgError } = await adminClient
       .from("organizations")
       .insert({
         name: companyName,
@@ -75,7 +78,7 @@ export async function signUp(formData: FormData) {
 
     if (org) {
       // Update user profile with full name and org
-      const { error: profileError } = await supabase
+      const { error: profileError } = await adminClient
         .from("profiles")
         .upsert({
           id: data.user.id,
@@ -90,7 +93,7 @@ export async function signUp(formData: FormData) {
 
       // If ABN provided, create the company as an internal vendor
       if (abn?.trim()) {
-        await supabase.from("vendors").insert({
+        await adminClient.from("vendors").insert({
           organization_id: org.id,
           name: companyName,
           abn: abn.replace(/\s/g, ""),
