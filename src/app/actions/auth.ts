@@ -90,7 +90,7 @@ export async function signUp(formData: FormData) {
           id: data.user.id,
           full_name: fullName,
           organization_id: org.id,
-          role: "admin",
+          role: "manager",
         });
 
       if (profileError) {
