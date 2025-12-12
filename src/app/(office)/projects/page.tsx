@@ -1,8 +1,17 @@
+import { redirect } from "next/navigation"
 import { getProjects } from "@/app/actions/projects"
 import { ProjectCard, ProjectDialog } from "@/components/features/projects"
 
 export default async function ProjectsPage() {
-  const projects = await getProjects()
+  let projects
+  try {
+    projects = await getProjects()
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      redirect("/login?redirect=/projects")
+    }
+    throw error
+  }
 
   return (
     <div className="space-y-6">

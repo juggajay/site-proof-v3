@@ -8,12 +8,15 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // If env vars not set, allow request to proceed (will fail at page level with better error)
     return NextResponse.next();
   }
 
-  // Update session first
-  const response = await updateSession(request);
+  let response: NextResponse;
+  try {
+    response = await updateSession(request);
+  } catch {
+    return NextResponse.next();
+  }
 
   // Check if the route requires authentication
   const protectedPaths = ["/dashboard", "/projects", "/vendors", "/resources", "/rate-cards", "/library", "/reports", "/lots", "/diary", "/itps", "/profile"];
