@@ -1,3 +1,5 @@
+"use client";
+
 import { FieldHeader } from "@/components/layouts/field-header";
 import { BottomNav } from "@/components/layouts/bottom-nav";
 

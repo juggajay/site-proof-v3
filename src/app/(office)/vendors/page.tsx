@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { getVendors } from "@/app/actions/vendors"
 import { VendorDialog } from "@/components/features/resources"
 import { Badge } from "@/components/ui/badge"
@@ -12,7 +13,15 @@ import {
 } from "@/components/ui/table"
 
 export default async function VendorsPage() {
-  const vendors = await getVendors()
+  let vendors
+  try {
+    vendors = await getVendors()
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      redirect("/login?redirect=/vendors")
+    }
+    throw error
+  }
 
   return (
     <div className="space-y-6">

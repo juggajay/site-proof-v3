@@ -1,9 +1,18 @@
+import { redirect } from "next/navigation"
 import { getTemplates } from "@/app/actions/itps"
 import { TemplateCard, TemplateDialog } from "@/components/features/itps"
 import type { TemplateItem } from "@/lib/schemas/itps"
 
 export default async function LibraryPage() {
-  const templates = await getTemplates()
+  let templates
+  try {
+    templates = await getTemplates()
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      redirect("/login?redirect=/library")
+    }
+    throw error
+  }
 
   return (
     <div className="space-y-6">

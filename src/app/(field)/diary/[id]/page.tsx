@@ -1,3 +1,4 @@
+import { notFound, redirect } from "next/navigation"
 import { getDiary, getAvailableResources } from "@/app/actions/diaries"
 import { DiaryEditorClient } from "./diary-editor-client"
 
@@ -7,10 +8,19 @@ interface DiaryEditorPageProps {
 
 export default async function DiaryEditorPage({ params }: DiaryEditorPageProps) {
   const { id } = await params
-  const [diary, availableResources] = await Promise.all([
-    getDiary(id),
-    getAvailableResources(),
-  ])
+
+  let diary, availableResources
+  try {
+    [diary, availableResources] = await Promise.all([
+      getDiary(id),
+      getAvailableResources(),
+    ])
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      redirect(`/login?redirect=/diary/${id}`)
+    }
+    notFound()
+  }
 
   return (
     <DiaryEditorClient diary={diary} availableResources={availableResources} />

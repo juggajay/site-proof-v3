@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { getLotItp } from "@/app/actions/itps"
 import { ChecklistRunner } from "@/components/features/itps"
 
@@ -12,7 +12,10 @@ export default async function ChecklistRunnerPage({ params }: ChecklistRunnerPag
   let itp
   try {
     itp = await getLotItp(id)
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      redirect(`/login?redirect=/itps/${id}`)
+    }
     notFound()
   }
 

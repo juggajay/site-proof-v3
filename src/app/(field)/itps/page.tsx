@@ -1,9 +1,18 @@
+import { redirect } from "next/navigation"
 import { getForemanItps } from "@/app/actions/itps"
 import { ItpCard } from "@/components/features/itps"
 import { ClipboardList } from "lucide-react"
 
 export default async function ItpsPage() {
-  const itps = await getForemanItps()
+  let itps
+  try {
+    itps = await getForemanItps()
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      redirect("/login?redirect=/itps")
+    }
+    throw error
+  }
 
   return (
     <div className="space-y-6 p-4">

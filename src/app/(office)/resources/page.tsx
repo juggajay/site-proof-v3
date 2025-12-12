@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { getResources } from "@/app/actions/resources"
 import { getVendors } from "@/app/actions/vendors"
 import { ResourceForm } from "@/components/features/resources"
@@ -15,10 +16,18 @@ import {
 import { centsToDollars } from "@/lib/schemas/resources"
 
 export default async function ResourcesPage() {
-  const [resources, vendors] = await Promise.all([
-    getResources(),
-    getVendors(),
-  ])
+  let resources, vendors
+  try {
+    [resources, vendors] = await Promise.all([
+      getResources(),
+      getVendors(),
+    ])
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      redirect("/login?redirect=/resources")
+    }
+    throw error
+  }
 
   return (
     <div className="space-y-6">
